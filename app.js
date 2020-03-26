@@ -1,13 +1,26 @@
 // Requires
-var express = require('express');
-var mongoose = require('mongoose');
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 
 // Inicializar variables
-var app = express();
+const app = express();
 
+
+// Body Parser
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// parse application/json
+app.use(bodyParser.json());
+
+// Importar rutas
+const appRoutes = require('./routes/app');
+const usuarioRoutes = require('./routes/usuario');
+const loginRoutes = require('./routes/login');
 
 // Conexión a la base de datos
-mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', { useNewUrlParser: true, useUnifiedTopology: true }, ( err, res ) => {
+mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }, ( err, res ) => {
     
     if ( err ) throw err;
 
@@ -17,16 +30,12 @@ mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', { useNewUrlP
 
 
 // Rutas
-app.get('/', ( req, res, next ) => {
+app.use('/usuario', usuarioRoutes);
+app.use('/login', loginRoutes);
+app.use('/', appRoutes);
 
-    res.status(200).json({
-        ok: true,
-        mensaje: 'Peticion realizada correctamente'
-    });
-
-});
 
 // Escuchar peticiones
 app.listen(3000, () => {
-    console.log('Expres server puerto 3000: \x1b[32m%s\x1b[0m','online');
+    console.log('Expres server puerto 3000: \x1b[32m%s\x1b[0m','online')
 });
