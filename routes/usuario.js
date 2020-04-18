@@ -16,7 +16,7 @@ app.get('/', ( req, res, next ) => {
     let desde = req.query.desde || 0;
     desde = Number(desde);
 
-    Usuario.find({}, 'nombre email img role')
+    Usuario.find({}, 'nombre email img role google')
         .skip(desde)
         .limit(5)
         .exec( ( err, usuarios ) => {
@@ -46,7 +46,7 @@ app.get('/', ( req, res, next ) => {
 // ==============================================================
 // Crear un nuevo usuario.
 // ==============================================================
-app.post('/', mdAutenticacion.verficaToken, ( req, res ) => {
+app.post('/', ( req, res ) => {
 
     let body = req.body;
 
@@ -83,7 +83,7 @@ app.post('/', mdAutenticacion.verficaToken, ( req, res ) => {
 // ==============================================================
 // Actualizar usuario.
 // ==============================================================
-app.put('/:id', mdAutenticacion.verficaToken, ( req, res ) => {
+app.put('/:id', [mdAutenticacion.verficaToken, mdAutenticacion.verficaADMIN_o_MismoUsuario], ( req, res ) => {
 
     let id = req.params.id;
     let body = req.body;
@@ -136,7 +136,7 @@ app.put('/:id', mdAutenticacion.verficaToken, ( req, res ) => {
 // ==============================================================
 // Borrar un usuario por el id
 // ==============================================================
-app.delete('/:id', mdAutenticacion.verficaToken, ( req, res ) => {
+app.delete('/:id', [mdAutenticacion.verficaToken, mdAutenticacion.verficaADMIN_ROLE], ( req, res ) => {
     
     let id = req.params.id;
 

@@ -11,6 +11,23 @@ const CLIENT_ID = require('../config/config').CLIENT_ID;
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(CLIENT_ID); 
 
+const mdAutenticacion = require('../middlewares/autenticacion');
+
+// ==============================================================
+// 
+// ==============================================================
+app.get('/renuevatoken', mdAutenticacion.verficaToken, ( req, res ) => {
+
+    let token = jwt.sign({ usuario: req.usuario }, SEED, { expiresIn: 14400 }); // 4 horas
+
+
+    return res.status(200).json({
+        ok: true,
+        tokne: token
+    });
+
+});
+
 // ==============================================================
 // Login Google
 // ==============================================================
@@ -42,7 +59,8 @@ app.post('/google', async( req, res ) => {
         .catch( err => {
             return res.status(403).json({
                 ok: false,
-                mensaje: 'Token no valido'
+                mensaje: 'Token no valido',
+                errors: err
             });
         });
 
@@ -71,7 +89,8 @@ app.post('/google', async( req, res ) => {
                         ok: true,
                         usuario: usuarioDB,
                         token: token,
-                        id: usuarioDB._id
+                        id: usuarioDB._id,
+                        menu: obtenerMenu( usuarioDB.role )
                     });
                 }
             } else {
@@ -91,7 +110,8 @@ app.post('/google', async( req, res ) => {
                         ok: true,
                         usuario: usuarioDB,
                         token: token,
-                        id: usuarioDB._id
+                        id: usuarioDB._id,
+                        menu: obtenerMenu( usuario.role )
                     });
 
                 });
@@ -149,12 +169,46 @@ app.post('/', ( req, res ) => {
             ok: true,
             usuario: usuarioDB,
             token: token,
-            id: usuarioDB._id
+            id: usuarioDB._id,
+            menu: obtenerMenu( usuarioDB.role )
         });
 
     });
 
 });
+
+function obtenerMenu( ROLE ) {
+
+    let menu = [
+        {
+          titulo: 'Principal',
+          icono: 'mdi mdi-gauge',
+          submenu: [
+            { titulo: 'Dashboard', url: '/dashboard' },
+            { titulo: 'ProgresssBar', url: '/progress' },
+            { titulo: 'Gráficas', url: '/graficas1' },
+            { titulo: 'Promesas', url: '/promesas' },
+            { titulo: 'RxJs', url: '/rxjs' }
+          ]
+        },
+        {
+          titulo: 'Mantenimiento',
+          icono: 'mdi mdi-folder-lock-open',
+          submenu: [
+            // { titulo: 'Usuarios', url: '/usuarios' },
+            { titulo: 'Hospitales', url: '/hospitales' },
+            { titulo: 'Médicos', url: '/medicos' }
+          ]
+        }
+      ];
+
+      if ( ROLE === 'ADMIN_ROLE' ) {
+        menu[1].submenu.unshift( { titulo: 'Usuarios', url: '/usuarios' } );
+      }
+
+
+    return menu;
+}
 
 
 module.exports = app;
